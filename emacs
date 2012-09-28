@@ -4,6 +4,7 @@
 (ansi-color-for-comint-mode-on)
 (fset 'yes-or-no-p 'y-or-n-p)
 (auto-compression-mode 1)
+(set 'column-number-mode t)
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Prevent annoying \"Active processes exist\" query when you quit Emacs."
@@ -20,8 +21,23 @@
 (require 'go-mode-load)
 (add-hook 'before-save-hook #'gofmt-before-save)
 
-(set 'default-tab-width 4) ;go uses this, was sticking me out in nowheres
-(set 'column-number-mode t)
+(defun go-if-error ()
+  "Insert error checking boilerplate for go code."
+  (interactive)
+  (insert "\n")
+  (indent-according-to-mode)
+  (insert "if e != nil {\n\n}\n")
+  (dotimes (i 2)
+    (previous-line)
+    (indent-according-to-mode)))
+
+(add-hook
+ 'go-mode-hook
+ '(lambda ()
+    (local-set-key "\M-e" 'go-if-error)
+    (set (make-local-variable 'compile-command) "go test")
+    (setq tab-width 4)
+    (setq show-trailing-whitespace t)))
 
 (load "/usr/share/emacs/site-lisp/haskell-mode/haskell-site-file")
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
